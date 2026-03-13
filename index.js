@@ -15,15 +15,19 @@ let members = [
 let MembersRouter = express.Router();
 
 app.use(morgan('dev'));
+app.use(express.json()); // Use express.json instead of just body-parser for Vercel compatibility
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors()); // Used to avoid CORS issues when consuming from React
+app.use(cors({ origin: '*' })); // Ensure CORS is fully open
 
-// Access-Control-Allow-Origin (Alternative to cors package, but instructions suggest using it, I'll keep the instruction's way just in case, augmented with cors just to be sure)
+// Access-Control-Allow-Origin
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
     next();
 });
 
@@ -101,7 +105,9 @@ MembersRouter.route('/')
         }
     });
 
-app.use(config.rootAPI + 'members', MembersRouter);
+// Allow Vercel to route both /api/v1/members AND just /members depending on how it's called
+app.use('/api/v1/members', MembersRouter);
+app.use('/members', MembersRouter);
 
 // Export the Express API for Vercel Serverless Functions
 module.exports = app;
