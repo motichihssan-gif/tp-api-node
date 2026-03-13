@@ -103,7 +103,13 @@ MembersRouter.route('/')
 
 app.use(config.rootAPI + 'members', MembersRouter);
 
-app.listen(config.port, () => console.log('Started on port ' + config.port));
+// Export the Express API for Vercel Serverless Functions
+module.exports = app;
+
+// Start server locally if run directly
+if (require.main === module) {
+    app.listen(config.port, () => console.log('Started on port ' + config.port));
+}
 
 function getIndex(id) {
     for (let i = 0; i < members.length; i++) {
